@@ -1,0 +1,329 @@
+<script lang="ts">
+	import {
+		Position,
+		Handle,
+		useSvelteFlow,
+		type NodeProps,
+	} from "@xyflow/svelte";
+
+	let { id, data }: NodeProps = $props();
+	const { updateNodeData } = useSvelteFlow();
+
+	const maxChoices = 5;
+
+	function getChoices() {
+		return Array.isArray(data?.choices) ? data.choices : [];
+	}
+
+	// push a full node update (merges name/text/choices keeping other data as-is)
+	function pushUpdate(patch: Record<string, any>) {
+		updateNodeData(id, { ...(data ?? {}), ...patch });
+	}
+
+	function addChoice() {
+		const choices = getChoices();
+		if (choices.length >= maxChoices) return;
+		const newChoices = [
+			...choices,
+			{ text: "", next: "", traits: [], conditions: [] },
+		];
+		pushUpdate({ choices: newChoices });
+	}
+
+	function removeChoice(idx: number) {
+		const choices = getChoices();
+		const newChoices = choices.filter((_, i) => i !== idx);
+		pushUpdate({ choices: newChoices });
+	}
+
+	function updateChoiceField(idx: number, key: string, value: any) {
+		const choices = getChoices();
+		const copy = choices.map((c, i) =>
+			i === idx ? { ...c, [key]: value } : c,
+		);
+		pushUpdate({ choices: copy });
+	}
+
+	function addTrait(choiceIdx: number) {
+		const choices = getChoices();
+		const c = choices[choiceIdx] ?? {
+			text: "",
+			next: "",
+			traits: [],
+			conditions: [],
+		};
+		const newTraits = [...(c.traits ?? []), { name: "", amount: 1 }];
+		updateChoiceField(choiceIdx, "traits", newTraits);
+	}
+	function removeTrait(choiceIdx: number, traitIdx: number) {
+		const choices = getChoices();
+		const c = choices[choiceIdx];
+		if (!c) return;
+		const newTraits = (c.traits ?? []).filter((_, i) => i !== traitIdx);
+		updateChoiceField(choiceIdx, "traits", newTraits);
+	}
+	function updateTrait(
+		choiceIdx: number,
+		traitIdx: number,
+		field: string,
+		value: any,
+	) {
+		const choices = getChoices();
+		const c = choices[choiceIdx];
+		if (!c) return;
+		const newTraits = (c.traits ?? []).map((t, i) =>
+			i === traitIdx ? { ...t, [field]: value } : t,
+		);
+		updateChoiceField(choiceIdx, "traits", newTraits);
+	}
+
+	function addCondition(choiceIdx: number) {
+		const choices = getChoices();
+		const c = choices[choiceIdx] ?? {
+			text: "",
+			next: "",
+			traits: [],
+			conditions: [],
+		};
+		const newConds = [...(c.conditions ?? []), ""];
+		updateChoiceField(choiceIdx, "conditions", newConds);
+	}
+	function removeCondition(choiceIdx: number, condIdx: number) {
+		const choices = getChoices();
+		const c = choices[choiceIdx];
+		if (!c) return;
+		const newConds = (c.conditions ?? []).filter((_, i) => i !== condIdx);
+		updateChoiceField(choiceIdx, "conditions", newConds);
+	}
+	function updateCondition(choiceIdx: number, condIdx: number, value: string) {
+		const choices = getChoices();
+		const c = choices[choiceIdx];
+		if (!c) return;
+		const newConds = (c.conditions ?? []).map((v, i) =>
+			i === condIdx ? value : v,
+		);
+		updateChoiceField(choiceIdx, "conditions", newConds);
+	}
+
+	/* Node-level fields */
+	function updateNodeName(name: string) {
+		pushUpdate({ name });
+	}
+	function updateNodeText(t: string) {
+		pushUpdate({ text: t });
+	}
+</script>
+
+<div class="node-card" style="resize: both; overflow: auto;">
+	<div class="field">
+		<label for="id">Node Name:</label>
+		<input
+			type="text"
+			value={data?.name ?? id}
+			oninput={(e) => updateNodeName((e.target as HTMLInputElement).value)}
+			placeholder="e.g. start"
+		/>
+	</div>
+
+	<div class="field">
+		<label for="id">NPC Text:</label>
+		<textarea
+			class="text-input"
+			rows="3"
+			oninput={(e) => updateNodeText((e.target as HTMLTextAreaElement).value)}
+			placeholder="What the NPC says...">{data?.text ?? ""}</textarea
+		>
+	</div>
+
+	<div class="field">
+		<label for="id">Choices:</label>
+
+		{#each getChoices() as choice, i (i)}
+			<div class="choice-block">
+				<div class="choice-main">
+					<input
+						type="text"
+						placeholder="Player line..."
+						value={choice.text}
+						oninput={(e) =>
+							updateChoiceField(
+								i,
+								"text",
+								(e.target as HTMLInputElement).value,
+							)}
+					/>
+					<input
+						type="text"
+						placeholder="Next node..."
+						value={choice.next}
+						oninput={(e) =>
+							updateChoiceField(
+								i,
+								"next",
+								(e.target as HTMLInputElement).value,
+							)}
+					/>
+					<button class="remove-btn" onclick={() => removeChoice(i)}>x</button>
+				</div>
+
+				<div class="sub-section">
+					<label for="id">Traits:</label>
+					{#each choice.traits ?? [] as trait, ti (ti)}
+						<div class="trait-row">
+							<input
+								type="text"
+								placeholder="Trait name"
+								value={trait.name}
+								oninput={(e) =>
+									updateTrait(
+										i,
+										ti,
+										"name",
+										(e.target as HTMLInputElement).value,
+									)}
+							/>
+							<input
+								type="number"
+								min="1"
+								placeholder="Amt"
+								value={trait.amount ?? 1}
+								oninput={(e) =>
+									updateTrait(
+										i,
+										ti,
+										"amount",
+										Number((e.target as HTMLInputElement).value),
+									)}
+								style="width: 4rem"
+							/>
+							<button class="mini-btn" onclick={() => removeTrait(i, ti)}
+								>x</button
+							>
+						</div>
+					{/each}
+					<button class="mini-btn add-mini" onclick={() => addTrait(i)}
+						>+ Add Trait</button
+					>
+				</div>
+
+				<div class="sub-section">
+					<label for="id">Conditions:</label>
+					{#each choice.conditions ?? [] as cond, ci (ci)}
+						<div class="cond-row">
+							<input
+								type="text"
+								placeholder="Condition (e.g. has_key)"
+								value={cond}
+								oninput={(e) =>
+									updateCondition(i, ci, (e.target as HTMLInputElement).value)}
+							/>
+							<button class="mini-btn" onclick={() => removeCondition(i, ci)}
+								>×</button
+							>
+						</div>
+					{/each}
+					<button class="mini-btn add-mini" onclick={() => addCondition(i)}
+						>+ Add Condition</button
+					>
+				</div>
+			</div>
+		{/each}
+
+		{#if getChoices().length < maxChoices}
+			<button class="add-btn" onclick={addChoice}>+ Add Choice</button>
+		{/if}
+	</div>
+
+	<Handle type="target" position={Position.Top} />
+	<Handle type="source" position={Position.Bottom} />
+</div>
+
+<style>
+	.node-card {
+		background: white;
+		border: 2px solid #ccc;
+		border-radius: 8px;
+		padding: 0.75rem;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+		min-width: 280px;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+	.field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+	label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: #444;
+	}
+	input,
+	textarea {
+		width: 100%;
+		border: 1px solid #bbb;
+		border-radius: 6px;
+		padding: 0.4rem;
+		font-family: inherit;
+		font-size: 0.9rem;
+		box-sizing: border-box;
+	}
+	.text-input {
+		resize: vertical;
+		min-height: 60px;
+	}
+	.choice-block {
+		border: 1px solid #ddd;
+		border-radius: 6px;
+		padding: 0.4rem;
+		margin-bottom: 0.5rem;
+		background: #fafafa;
+	}
+	.choice-main {
+		display: grid;
+		grid-template-columns: 1fr 0.6fr auto;
+		gap: 0.25rem;
+		align-items: center;
+		margin-bottom: 0.25rem;
+	}
+	.sub-section {
+		border-left: 2px solid #ddd;
+		margin-left: 0.5rem;
+		padding-left: 0.5rem;
+		margin-top: 0.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+	.trait-row,
+	.cond-row {
+		display: flex;
+		gap: 0.25rem;
+		align-items: center;
+	}
+	.add-btn,
+	.mini-btn {
+		background: #eee;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 0.8rem;
+		padding: 0.2rem 0.4rem;
+	}
+	.add-btn:hover,
+	.add-mini:hover {
+		background: #d9f0ff;
+	}
+	.remove-btn {
+		color: #b00;
+		font-weight: bold;
+		width: 1.5rem;
+		text-align: center;
+		background: #eee;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+	}
+</style>
