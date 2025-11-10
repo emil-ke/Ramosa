@@ -76,12 +76,18 @@
 		return String(nodeCounter);
 	}
 
-	function onKeyDown(e) {
-		if (e.keyCode === 78) {
-			addNode()
+	function onKeyDown(e: KeyboardEvent) {
+		// ignore key events if the user is typing in an input or textarea
+		const target = e.target as HTMLElement;
+		if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+			return;
+		}
+
+		if (e.key === 'n' || e.key === 'N') {
+			e.preventDefault(); // only prevent default for this key
+			addNode();
 		}
 	}
-
 
 	function addNode() {
 		const id = getNextId();
@@ -287,4 +293,4 @@
 	}
 </style>
 
-<svelte:window on:keydown|preventDefault={onKeyDown} />
+<svelte:window on:keydown={onKeyDown} />
