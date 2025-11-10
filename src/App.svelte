@@ -76,6 +76,13 @@
 		return String(nodeCounter);
 	}
 
+	function onKeyDown(e) {
+		if (e.keyCode === 78) {
+			addNode()
+		}
+	}
+
+
 	function addNode() {
 		const id = getNextId();
 		leftRight *= -1;
@@ -279,3 +286,5 @@
 		margin-right: 0.5rem;
 	}
 </style>
+
+<svelte:window on:keydown|preventDefault={onKeyDown} />
