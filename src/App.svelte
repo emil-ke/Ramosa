@@ -268,9 +268,9 @@
 	</div>
 
 	<SvelteFlow bind:nodes bind:edges {nodeTypes} onconnect={onConnect} fitView>
-		<Controls />
-		<Background />
-		<MiniMap />
+		<Controls orientation="horizontal" />
+		<Background bgColor="#111" />
+		<MiniMap bgColor="#000" nodeColor="#333" maskColor="#222"/>
 	</SvelteFlow>
 </div>
 
@@ -283,7 +283,7 @@
 	}
 	.top_btn {
 		padding: 0.5rem 1.6rem;
-		font-size: 16px;
+		font-size: 0.9rem;
 		color: white;
 		border-radius: 8px;
 		border: none;

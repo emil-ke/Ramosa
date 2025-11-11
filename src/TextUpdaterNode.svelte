@@ -163,7 +163,7 @@
 								(e.target as HTMLInputElement).value,
 							)}
 					/>
-					<button class="remove-btn" onclick={() => removeChoice(i)}>x</button>
+					<button class="remove-btn" onclick={() => removeChoice(i)}>✗</button>
 				</div>
 
 				<div class="sub-section">
@@ -240,8 +240,9 @@
 
 <style>
 	.node-card {
-		background: white;
-		border: 2px solid #ccc;
+		background: black;
+		color: #f0f0f0;
+		border: 1px solid #174f35;
 		border-radius: 8px;
 		padding: 0.75rem;
 		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -256,18 +257,20 @@
 		gap: 0.25rem;
 	}
 	label {
-		font-size: 0.8rem;
+		font-size: 0.7rem;
 		font-weight: 600;
-		color: #444;
+		color: #41d992;
 	}
 	input,
 	textarea {
 		width: 100%;
-		border: 1px solid #bbb;
+		background: black;
+		color: white;
+		border: 1px solid #333;
 		border-radius: 6px;
 		padding: 0.4rem;
 		font-family: inherit;
-		font-size: 0.9rem;
+		font-size: 0.67rem;
 		box-sizing: border-box;
 	}
 	.text-input {
@@ -275,11 +278,11 @@
 		min-height: 60px;
 	}
 	.choice-block {
-		border: 1px solid #ddd;
+		border: 1px solid #333;
 		border-radius: 6px;
 		padding: 0.4rem;
 		margin-bottom: 0.5rem;
-		background: #fafafa;
+		background: black;
 	}
 	.choice-main {
 		display: grid;
@@ -289,7 +292,7 @@
 		margin-bottom: 0.25rem;
 	}
 	.sub-section {
-		border-left: 2px solid #ddd;
+		border-left: 1px solid #333;
 		margin-left: 0.5rem;
 		padding-left: 0.5rem;
 		margin-top: 0.25rem;
@@ -305,23 +308,24 @@
 	}
 	.add-btn,
 	.mini-btn {
-		background: #eee;
+		background: #111;
+		color: #f0f0f0;
 		border: none;
 		border-radius: 4px;
 		cursor: pointer;
-		font-size: 0.8rem;
+		font-size: 0.5rem;
 		padding: 0.2rem 0.4rem;
 	}
 	.add-btn:hover,
 	.add-mini:hover {
-		background: #d9f0ff;
+		background: #333;
 	}
 	.remove-btn {
 		color: #b00;
 		font-weight: bold;
 		width: 1.5rem;
 		text-align: center;
-		background: #eee;
+		background: #333;
 		border: none;
 		border-radius: 4px;
 		cursor: pointer;
